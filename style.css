@@ -17,12 +17,16 @@ canvas {
 }
 
 .arrow {
+	position: relative;
+	top: 3%;
 	width: 0;
 	height: 0;
 	border-left: 20px solid transparent;
 	border-right: 20px solid transparent;
-	border-bottom: 40px solid #1B1E2B;
+	border-bottom: 40px solid #FFD700;
 	margin-bottom: -20px;
+	z-index: 1;
+	transform: rotate(180deg);
 }
 
 button {

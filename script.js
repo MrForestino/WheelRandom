@@ -81,7 +81,7 @@ function stopRotateWheel() {
   let degrees = startAngle * 180 / Math.PI + 90;
   let arcd = arc * 180 / Math.PI;
   let index = Math.floor((360 - (degrees % 360)) / arcd) % users.length;
-  resultText.innerText = "Випав: " + users[index];
+  resultText.innerText = "Побидитель: " + users[index];
   spinning = false;
 }
 
