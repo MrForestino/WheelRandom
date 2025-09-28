@@ -60,8 +60,9 @@ function spin() {
   if (spinning || !users.length) return;
   spinning = true;
 
+  let spinAngleStart = Math.random() * 20 + 30; // початкова швидкість (чим більше, тим довше крутиться)
   let spinTime = 0;
-  let spinTimeTotal = 3000 + Math.random() * 2000; // 3–5 сек
+  let spinTimeTotal = 20000; // ⏱ 20 секунд
 
   function rotate() {
     spinTime += 30;
@@ -69,13 +70,22 @@ function spin() {
       stopRotateWheel();
       return;
     }
-    let spinAngleChange = (Math.random() * 10 + 10) * Math.PI / 180;
-    startAngle += spinAngleChange;
+
+    // розрахунок зменшення швидкості
+    let spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
+    startAngle += (spinAngle * Math.PI / 180);
     drawWheel();
     requestAnimationFrame(rotate);
   }
   rotate();
 }
+
+function easeOut(t, b, c, d) {
+  let ts = (t /= d) * t;
+  let tc = ts * t;
+  return b + c * (tc + -3 * ts + 3 * t); // плавне уповільнення
+}
+
 
 function stopRotateWheel() {
   let degrees = startAngle * 180 / Math.PI + 90;
