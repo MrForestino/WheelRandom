@@ -30,6 +30,18 @@ async function loadUsers() {
   users = data.map(u => u.telegram_name);
   arc = Math.PI * 2 / users.length;
   drawWheel();
+
+//   users = [
+//   "User01","User02","User03","User04","User05",
+//   "User06","User07","User08","User09","User10",
+//   "User11","User12","User13","User14","User15",
+//   "User16","User17","User18","User19","User20",
+//   "User21","User22","User23","User24","User25",
+//   "User26","User27","User28","User29","User30"
+// ];
+
+arc = Math.PI * 2 / users.length;
+drawWheel();
 }
 
 function drawWheel() {
@@ -61,8 +73,8 @@ function spin() {
   spinning = true;
 
   let spinTime = 0;
-  let fastSpinDuration = 15000; // 15 сек швидке обертання
-  let slowSpinDuration = 5000;  // 5 сек плавне гальмування
+  let fastSpinDuration = 10000; // 10 сек швидке обертання
+  let slowSpinDuration = 20000;  // 25 сек плавне гальмування
   let spinAngle = 25; // швидкість у градусах за крок
 
   function rotateFast() {
@@ -84,8 +96,12 @@ function spin() {
       stopRotateWheel();
       return;
     }
-    // швидкість плавно зменшується від 25 → 0
-    let currentSpeed = spinAngle * (1 - spinTime / slowSpinDuration);
+
+    // 🔥 плавне сповільнення (cubic easeOut)
+    let progress = spinTime / slowSpinDuration; // від 0 до 1
+    let easing = 1 - Math.pow(1 - progress, 3); // кубічна крива
+    let currentSpeed = spinAngle * (1 - easing);
+
     startAngle += (currentSpeed * Math.PI / 180);
     drawWheel();
     requestAnimationFrame(rotateSlow);

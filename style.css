@@ -25,7 +25,7 @@ canvas {
 	border-right: 20px solid transparent;
 	border-bottom: 40px solid #FFD700;
 	margin-bottom: -20px;
-	z-index: 1;
+	z-index: 2;
 	transform: rotate(180deg);
 }
 
@@ -38,4 +38,44 @@ button {
 	color: #1B1E2B;
 	font-size: 18px;
 	cursor: pointer;
+}
+.wheel-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* базові параметри картинок */
+.decor-img {
+  position: absolute;
+  width: 120px;   /* підбери розмір під себе */
+  height: auto;
+  top: 50%;
+  transform: translateY(-30%);
+  opacity: 0.9;   /* щоб не перекривало повністю */
+  z-index: 0;     /* картинки будуть за колесом */
+}
+
+/* ліва картинка */
+.decor-img.left {
+	top: 100px;
+  left: -80px;              /* відступ від колеса */
+  transform: translateY(-50%) rotate(-40deg);
+	width: 200px;
+}
+
+/* права картинка */
+.decor-img.right {
+  right: -85px;             /* відступ від колеса */
+  transform: translateY(-50%) rotate(40deg);
+}
+
+/* саме колесо */
+canvas {
+  border: 10px solid #FFD700;
+  border-radius: 50%;
+  background: white;
+  z-index: 1; /* вище за картинки */
+  position: relative;
 }
