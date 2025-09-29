@@ -10,8 +10,8 @@ const ctx = canvas.getContext("2d");
 const spinButton = document.getElementById("spinButton");
 const resultText = document.getElementById("result");
 
-let users = []; // тут зберігатимемо імена з БД
-let colors = ["#4DB6FF", "#FF4D4D"];
+let users = [];
+let colors = ["#4DB6FF", "#FF4D4D", "#8AFF4D", "#FF8AFF", "#FFD700"];
 let startAngle = 0;
 let arc;
 let spinning = false;
@@ -19,7 +19,7 @@ let spinning = false;
 // завантаження користувачів із supabase
 async function loadUsers() {
   const { data, error } = await supa
-    .from("contest_users") // 👉 назва твоєї таблиці
+    .from("contest_users")
     .select("telegram_name, telegram_id");
 
   if (error) {
@@ -28,20 +28,13 @@ async function loadUsers() {
   }
 
   users = data.map(u => u.telegram_name);
+
+  if (!users.length) {
+    users = ["User01","User02","User03","User04","User05","User06"];
+  }
+
   arc = Math.PI * 2 / users.length;
   drawWheel();
-
-//   users = [
-//   "User01","User02","User03","User04","User05",
-//   "User06","User07","User08","User09","User10",
-//   "User11","User12","User13","User14","User15",
-//   "User16","User17","User18","User19","User20",
-//   "User21","User22","User23","User24","User25",
-//   "User26","User27","User28","User29","User30"
-// ];
-
-arc = Math.PI * 2 / users.length;
-drawWheel();
 }
 
 function drawWheel() {
@@ -72,16 +65,17 @@ function spin() {
   if (spinning || !users.length) return;
   spinning = true;
 
-  let randomIndex = Math.floor(Math.random() * users.length); // 🎲 випадковий переможець
+  // 🎲 випадковий переможець
+  let randomIndex = Math.floor(Math.random() * users.length);
+
+  // обчислюємо кут для зупинки
   let targetAngle = 360 - (randomIndex * arc * 180/Math.PI + arc*180/(2*Math.PI));
-  targetAngle += 360 * 5; // ще +5 повних обертів для ефекту
+  targetAngle += 360 * 5; // додаємо 5 обертів
 
   let currentAngle = startAngle * 180/Math.PI;
-  let diff = (targetAngle - currentAngle) % 360;
-  if (diff < 0) diff += 360;
-  let finalAngle = currentAngle + diff;
+  let finalAngle = currentAngle + ((targetAngle - currentAngle) % 360 + 360) % 360;
 
-  let duration = 5000; // 5 сек
+  let duration = 5000; // 5 секунд
   let startTime = null;
 
   function animateSpin(timestamp) {
@@ -91,12 +85,13 @@ function spin() {
     if (progress >= 1) {
       startAngle = finalAngle * Math.PI/180;
       drawWheel();
-      resultText.innerText = "Переможець: " + users[randomIndex];
+      resultText.innerText = "🎉 Переможець: " + users[randomIndex];
       spinning = false;
       return;
     }
 
-    let ease = 1 - Math.pow(1 - progress, 3); // easeOut
+    // easing (easeOutCubic)
+    let ease = 1 - Math.pow(1 - progress, 3);
     let angle = currentAngle + (finalAngle - currentAngle) * ease;
     startAngle = angle * Math.PI/180;
     drawWheel();
@@ -104,54 +99,6 @@ function spin() {
   }
 
   requestAnimationFrame(animateSpin);
-}
-
-  function rotateFast() {
-    spinTime += 30;
-    if (spinTime >= fastSpinDuration) {
-      // після 15 сек переходимо на уповільнення
-      spinTime = 0;
-      rotateSlow();
-      return;
-    }
-    startAngle += (spinAngle * Math.PI / 180);
-    drawWheel();
-    requestAnimationFrame(rotateFast);
-  }
-
-  function rotateSlow() {
-    spinTime += 30;
-    if (spinTime >= slowSpinDuration) {
-      stopRotateWheel();
-      return;
-    }
-
-    // 🔥 плавне сповільнення (cubic easeOut)
-    let progress = spinTime / slowSpinDuration; // від 0 до 1
-    let easing = 1 - Math.pow(1 - progress, 3); // кубічна крива
-    let currentSpeed = spinAngle * (1 - easing);
-
-    startAngle += (currentSpeed * Math.PI / 180);
-    drawWheel();
-    requestAnimationFrame(rotateSlow);
-  }
-
-  rotateFast();
-}
-
-function easeOut(t, b, c, d) {
-  let ts = (t /= d) * t;
-  let tc = ts * t;
-  return b + c * (tc + -3 * ts + 3 * t); // плавне уповільнення
-}
-
-
-function stopRotateWheel() {
-  let degrees = startAngle * 180 / Math.PI + 90;
-  let arcd = arc * 180 / Math.PI;
-  let index = Math.floor((360 - (degrees % 360)) / arcd) % users.length;
-  resultText.innerText = "Побидитель: " + users[index];
-  spinning = false;
 }
 
 spinButton.addEventListener("click", spin);
