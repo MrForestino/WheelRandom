@@ -1,4 +1,4 @@
-// 🔑 встав свої ключі з Supabase
+// 🔑 вставь свои ключи из Supabase
 const SUPABASE_URL = "https://axkokrmdggycjiglxnxj.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4a29rcm1kZ2d5Y2ppZ2x4bnhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzODE4MjYsImV4cCI6MjA3Mzk1NzgyNn0.zAtjm08AcpoWAnIiDVGKiTsIq19iWP5aCxCLn7ZfznM";
 
@@ -11,19 +11,19 @@ const spinButton = document.getElementById("spinButton");
 const resultText = document.getElementById("result");
 
 let users = [];
-let colors = ["#4DB6FF", "#FF4D4D"]; // 🔵 🔴 синій та червоний
+let colors = ["#4DB6FF", "#FF4D4D"]; // 🔵 🔴 синий и красный
 let startAngle = 0;
 let arc;
 let spinning = false;
 
-// завантаження користувачів із supabase
+// загрузка пользователей из supabase
 async function loadUsers() {
   const { data, error } = await supa
     .from("contest_users")
     .select("telegram_name, telegram_id");
 
   if (error) {
-    console.error("Помилка завантаження:", error);
+    console.error("Ошибка загрузки:", error);
     return;
   }
 
@@ -65,15 +65,12 @@ function spin() {
   if (spinning || !users.length) return;
   spinning = true;
 
-  let randomIndex = Math.floor(Math.random() * users.length);
-  let targetAngle = 360 - (randomIndex * arc * 180/Math.PI + arc*180/(2*Math.PI));
-  targetAngle += 360 * 8; // кілька повних обертів
+  let spins = 10; // количество полных оборотов
+  let currentAngle = startAngle * 180 / Math.PI;
+  let finalAngle = currentAngle + spins * 360 + Math.random() * 360;
 
-  let currentAngle = startAngle * 180/Math.PI;
-  let finalAngle = currentAngle + ((targetAngle - currentAngle) % 360 + 360) % 360;
-
-  let fastDuration = 10000;  // 10 сек швидке обертання
-  let slowDuration = 20000;  // 20 сек уповільнення
+  let fastDuration = 10000;  // 10 сек быстрая прокрутка
+  let slowDuration = 20000;  // 20 сек замедление
   let startTime = null;
 
   function animateSpin(timestamp) {
@@ -81,25 +78,25 @@ function spin() {
     let elapsed = timestamp - startTime;
 
     if (elapsed < fastDuration) {
-      // 🚀 швидке обертання
+      // 🚀 быстрая прокрутка
       let progress = elapsed / fastDuration;
-      let angle = currentAngle + (progress * 360 * 5); // крутимо 5 обертів
+      let angle = currentAngle + progress * (spins * 180);
       startAngle = angle * Math.PI / 180;
       drawWheel();
       requestAnimationFrame(animateSpin);
     } else if (elapsed < fastDuration + slowDuration) {
-      // 🐢 уповільнення
+      // 🐢 замедление
       let progress = (elapsed - fastDuration) / slowDuration;
-      let ease = 1 - Math.pow(1 - progress, 3); // easing
-      let angle = currentAngle + (360 * 5) + (finalAngle - currentAngle) * ease;
+      let ease = 1 - Math.pow(1 - progress, 3);
+      let angle = currentAngle + spins * 180 + (finalAngle - currentAngle - spins * 180) * ease;
       startAngle = angle * Math.PI / 180;
       drawWheel();
       requestAnimationFrame(animateSpin);
     } else {
       // ✅ стоп
-      startAngle = finalAngle * Math.PI/180;
+      startAngle = finalAngle * Math.PI / 180;
       drawWheel();
-      resultText.innerText = "🎉 Переможець: " + users[randomIndex];
+      showWinner();
       spinning = false;
     }
   }
@@ -107,7 +104,16 @@ function spin() {
   requestAnimationFrame(animateSpin);
 }
 
+function showWinner() {
+  // угол в градусах
+  let degrees = startAngle * 180 / Math.PI + 90;
+  let arcd = arc * 180 / Math.PI;
+  let index = Math.floor((360 - (degrees % 360)) / arcd) % users.length;
+
+  resultText.innerText = "🎉 Победитель: " + users[index];
+}
+
 spinButton.addEventListener("click", spin);
 
-// завантажуємо дані з бази при старті
+// загрузка данных при старте
 loadUsers();
