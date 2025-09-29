@@ -72,10 +72,39 @@ function spin() {
   if (spinning || !users.length) return;
   spinning = true;
 
-  let spinTime = 0;
-  let fastSpinDuration = 10000; // 10 сек швидке обертання
-  let slowSpinDuration = 20000;  // 25 сек плавне гальмування
-  let spinAngle = 25; // швидкість у градусах за крок
+  let randomIndex = Math.floor(Math.random() * users.length); // 🎲 випадковий переможець
+  let targetAngle = 360 - (randomIndex * arc * 180/Math.PI + arc*180/(2*Math.PI));
+  targetAngle += 360 * 5; // ще +5 повних обертів для ефекту
+
+  let currentAngle = startAngle * 180/Math.PI;
+  let diff = (targetAngle - currentAngle) % 360;
+  if (diff < 0) diff += 360;
+  let finalAngle = currentAngle + diff;
+
+  let duration = 5000; // 5 сек
+  let startTime = null;
+
+  function animateSpin(timestamp) {
+    if (!startTime) startTime = timestamp;
+    let progress = (timestamp - startTime) / duration;
+
+    if (progress >= 1) {
+      startAngle = finalAngle * Math.PI/180;
+      drawWheel();
+      resultText.innerText = "Переможець: " + users[randomIndex];
+      spinning = false;
+      return;
+    }
+
+    let ease = 1 - Math.pow(1 - progress, 3); // easeOut
+    let angle = currentAngle + (finalAngle - currentAngle) * ease;
+    startAngle = angle * Math.PI/180;
+    drawWheel();
+    requestAnimationFrame(animateSpin);
+  }
+
+  requestAnimationFrame(animateSpin);
+}
 
   function rotateFast() {
     spinTime += 30;
