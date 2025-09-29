@@ -11,7 +11,7 @@ const spinButton = document.getElementById("spinButton");
 const resultText = document.getElementById("result");
 
 let users = [];
-let colors = ["#4DB6FF", "#FF4D4D", "#8AFF4D", "#FF8AFF", "#FFD700"];
+let colors = ["#4DB6FF", "#FF4D4D"]; // 🔵 🔴 синій та червоний
 let startAngle = 0;
 let arc;
 let spinning = false;
@@ -65,37 +65,43 @@ function spin() {
   if (spinning || !users.length) return;
   spinning = true;
 
-  // 🎲 випадковий переможець
   let randomIndex = Math.floor(Math.random() * users.length);
-
-  // обчислюємо кут для зупинки
   let targetAngle = 360 - (randomIndex * arc * 180/Math.PI + arc*180/(2*Math.PI));
-  targetAngle += 360 * 5; // додаємо 5 обертів
+  targetAngle += 360 * 8; // кілька повних обертів
 
   let currentAngle = startAngle * 180/Math.PI;
   let finalAngle = currentAngle + ((targetAngle - currentAngle) % 360 + 360) % 360;
 
-  let duration = 5000; // 5 секунд
+  let fastDuration = 10000;  // 10 сек швидке обертання
+  let slowDuration = 20000;  // 20 сек уповільнення
   let startTime = null;
 
   function animateSpin(timestamp) {
     if (!startTime) startTime = timestamp;
-    let progress = (timestamp - startTime) / duration;
+    let elapsed = timestamp - startTime;
 
-    if (progress >= 1) {
+    if (elapsed < fastDuration) {
+      // 🚀 швидке обертання
+      let progress = elapsed / fastDuration;
+      let angle = currentAngle + (progress * 360 * 5); // крутимо 5 обертів
+      startAngle = angle * Math.PI / 180;
+      drawWheel();
+      requestAnimationFrame(animateSpin);
+    } else if (elapsed < fastDuration + slowDuration) {
+      // 🐢 уповільнення
+      let progress = (elapsed - fastDuration) / slowDuration;
+      let ease = 1 - Math.pow(1 - progress, 3); // easing
+      let angle = currentAngle + (360 * 5) + (finalAngle - currentAngle) * ease;
+      startAngle = angle * Math.PI / 180;
+      drawWheel();
+      requestAnimationFrame(animateSpin);
+    } else {
+      // ✅ стоп
       startAngle = finalAngle * Math.PI/180;
       drawWheel();
       resultText.innerText = "🎉 Переможець: " + users[randomIndex];
       spinning = false;
-      return;
     }
-
-    // easing (easeOutCubic)
-    let ease = 1 - Math.pow(1 - progress, 3);
-    let angle = currentAngle + (finalAngle - currentAngle) * ease;
-    startAngle = angle * Math.PI/180;
-    drawWheel();
-    requestAnimationFrame(animateSpin);
   }
 
   requestAnimationFrame(animateSpin);
